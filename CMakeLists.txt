@@ -16,6 +16,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# @todo: 这块代码的意义是？
 if (WIN32)
   set(LEVELDB_PLATFORM_NAME LEVELDB_PLATFORM_WINDOWS)
   # TODO(cmumford): Make UNICODE configurable for Windows.
@@ -24,6 +25,7 @@ else (WIN32)
   set(LEVELDB_PLATFORM_NAME LEVELDB_PLATFORM_POSIX)
 endif (WIN32)
 
+# 设置条件变量
 option(LEVELDB_BUILD_TESTS "Build LevelDB's unit tests" ON)
 option(LEVELDB_BUILD_BENCHMARKS "Build LevelDB's benchmarks" ON)
 option(LEVELDB_INSTALL "Install LevelDB's header and library" ON)
@@ -101,14 +103,17 @@ check_cxx_source_compiles("
 int main() { std::string str; return 0; }
 " HAVE_CXX17_HAS_INCLUDE)
 
+
 set(LEVELDB_PUBLIC_INCLUDE_DIR "include/leveldb")
 set(LEVELDB_PORT_CONFIG_DIR "include/port")
 
+# 将 <input> 文件里面的内容全部复制到 <output> 文件中；
 configure_file(
   "${PROJECT_SOURCE_DIR}/port/port_config.h.in"
   "${PROJECT_BINARY_DIR}/${LEVELDB_PORT_CONFIG_DIR}/port_config.h"
 )
 
+# 设置头文件目录
 include_directories(
   "${PROJECT_BINARY_DIR}/include"
   "${PROJECT_SOURCE_DIR}"
@@ -120,6 +125,7 @@ if(BUILD_SHARED_LIBS)
 endif(BUILD_SHARED_LIBS)
 
 add_library(leveldb "")
+
 target_sources(leveldb
   PRIVATE
     "${PROJECT_BINARY_DIR}/${LEVELDB_PORT_CONFIG_DIR}/port_config.h"
@@ -289,6 +295,12 @@ add_executable(leveldbutil
 )
 target_link_libraries(leveldbutil leveldb)
 
+add_executable(helloLeveldb
+  "${PROJECT_SOURCE_DIR}/helloLeveldb/hello.cc"
+)
+target_link_libraries(helloLeveldb leveldb)
+
+
 if(LEVELDB_BUILD_TESTS)
   enable_testing()
 
@@ -333,6 +345,7 @@ if(LEVELDB_BUILD_TESTS)
   leveldb_test("${PROJECT_SOURCE_DIR}/util/no_destructor_test.cc")
 
   if(NOT BUILD_SHARED_LIBS)
+    leveldb_test("${PROJECT_SOURCE_DIR}/app/app_test.cc")
     leveldb_test("${PROJECT_SOURCE_DIR}/db/autocompact_test.cc")
     leveldb_test("${PROJECT_SOURCE_DIR}/db/corruption_test.cc")
     leveldb_test("${PROJECT_SOURCE_DIR}/db/db_test.cc")
